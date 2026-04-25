@@ -17,7 +17,7 @@ struct ProductsView: View {
                 LazyVStack(spacing: 16) {
                     ForEach(viewModel.products) { product in
                         NavigationLink(value: product) {
-                            Text("New")
+                            ProductCardView(product: product)
                         }
                         .buttonStyle(.plain)
                     }
