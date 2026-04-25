@@ -7,9 +7,39 @@
 
 import SwiftUI
 
+@MainActor
 struct ProductsView: View {
+    @State private var viewModel = ProductsViewModel()
+    @State private var isShowingCreateSheet = false
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationStack {
+            ScrollView {
+                LazyVStack(spacing: 16) {
+                    ForEach(viewModel.products) { product in
+                        NavigationLink(value: product) {
+                            Text("New")
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle(Text("Products"))
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        isShowingCreateSheet = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+            .navigationDestination(for: Product.self) { product in
+                ProductDetailView(product: product)
+            }
+            .refreshable { await viewModel.loadProducts() }
+            .task { await viewModel.loadProducts() }
+        }
     }
 }
 

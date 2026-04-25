@@ -11,7 +11,7 @@ import Foundation
 final class ProductsViewModel {
     var products: [Product] = []
     
-    func loadProducts() async throws {
+    func loadProducts() async {
         self.products = Product.mockProducts
     }
 }
