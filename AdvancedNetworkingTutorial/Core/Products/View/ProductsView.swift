@@ -37,6 +37,10 @@ struct ProductsView: View {
             .navigationDestination(for: Product.self) { product in
                 ProductDetailView(product: product)
             }
+            .sheet(isPresented: $isShowingCreateSheet) {
+                ProductFormView(intent: .create)
+                    .environment(viewModel)
+            }
             .refreshable { await viewModel.loadProducts() }
             .task { await viewModel.loadProducts() }
         }

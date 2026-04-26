@@ -23,4 +23,14 @@ final class ProductsViewModel {
             print("DEBUG: Error fetching products: \(error)")
         }
     }
+    
+    func createProduct(_ payload: CreateProductRequest) async {
+        do {
+            let newProduct = try await service.createProduct(payload)
+            print("New product \(newProduct)")
+            products.insert(newProduct, at: 0)
+        } catch {
+            print("DEBUG: Failed to create product with error: \(error)")
+        }
+    }
 }
