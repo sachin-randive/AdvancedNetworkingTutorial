@@ -9,7 +9,7 @@ import SwiftUI
 
 @MainActor
 struct ProductsView: View {
-    @State private var viewModel = ProductsViewModel()
+    @State private var viewModel = ProductsViewModel(service: ProductService())
     @State private var isShowingCreateSheet = false
     var body: some View {
         NavigationStack {
