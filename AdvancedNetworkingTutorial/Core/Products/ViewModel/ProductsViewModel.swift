@@ -33,4 +33,27 @@ final class ProductsViewModel {
             print("DEBUG: Failed to create product with error: \(error)")
         }
     }
+    
+    func updateProduct(_ id: Int, with payload: UpdateProductRequest) async {
+        guard let index = products.firstIndex(where: { $0.id == id }) else { return }
+        
+        do {
+            let updatedProduct = try await service.updateProduct(id, with: payload)
+            print("Updated product \(updatedProduct)")
+            products[index] = updatedProduct
+        } catch {
+            print("DEBUG: Failed to update product with error: \(error)")
+        }
+    }
+    
+    func deletProduct(_ id: Int) async {
+        guard let index = products.firstIndex(where: { $0.id == id }) else { return }
+        
+        do {
+            try await service.deleteProduct(id)
+            products.remove(at: index)
+        } catch {
+            print("DEBUG: Failed to delet product with error: \(error)")
+        }
+    }
 }

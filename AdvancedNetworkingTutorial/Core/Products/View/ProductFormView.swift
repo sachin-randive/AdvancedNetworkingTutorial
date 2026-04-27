@@ -76,7 +76,9 @@ struct ProductFormView: View {
             }
         }
     }
-    
+}
+
+private extension ProductFormView {
     private func submit() async {
         validationMessage = nil
         
@@ -123,6 +125,9 @@ struct ProductFormView: View {
             
         case .update(let product):
             print("Update product \(product.id)")
+            
+            let payload = UpdateProductRequest(title: title, price: parsedPrice)
+            await viewModel.updateProduct(product.id, with: payload)
         }
     }
     

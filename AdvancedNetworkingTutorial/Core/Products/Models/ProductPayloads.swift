@@ -15,3 +15,8 @@ struct CreateProductRequest: Encodable {
     let images: [String]
 }
 
+struct UpdateProductRequest: Encodable {
+    let title: String
+    let price: Int
+}
+
