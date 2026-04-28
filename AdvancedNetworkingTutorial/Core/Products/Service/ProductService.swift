@@ -14,79 +14,32 @@ protocol ProductServiceProtocol {
 }
 
 struct ProductService: ProductServiceProtocol {
-    private let baseURL: URL = URL(string: "https://api.escuelajs.co/api/v1/products")!
+    private let baseURL: URL = URL(string: "https://api.escuelajs.co/api/v1/")!
     
     func updateProduct(_ id: Int, with payload: UpdateProductRequest) async throws -> Product {
-        let baseURL: URL = URL(string: "https://api.escuelajs.co/api/v1/products/\(id)")!
-        var request = URLRequest(url: baseURL)
-        request.httpMethod = "PUT"
-        
-        let body = try JSONEncoder().encode(payload)
-        request.httpBody = body
-        
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw URLError(.badServerResponse)
-        }
-        
-        guard (200..<300).contains(httpResponse.statusCode) else {
-            let bodyString = String(data: data, encoding: .utf8) ?? "<non-UTF8 body>"
-            print("Update failed: \(httpResponse.statusCode) – \(bodyString)")
-            throw URLError(.badServerResponse)
-        }
-        
-        return try JSONDecoder().decode(Product.self, from: data)
+        let requestModel = try APIRequest<Product>(method: .put, path: "products/\(id)", body: payload)
+        return try await execute(requestModel)
     }
     
     func deleteProduct(_ id: Int) async throws {
-        let baseURL: URL = URL(string: "https://api.escuelajs.co/api/v1/products/\(id)")!
-        var request = URLRequest(url: baseURL)
-        request.httpMethod = "DELETE"
-        
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw URLError(.badServerResponse)
-        }
-        
-        guard (200..<300).contains(httpResponse.statusCode) else {
-            let bodyString = String(data: data, encoding: .utf8) ?? "<non-UTF8 body>"
-            print("Update failed: \(httpResponse.statusCode) – \(bodyString)")
-            throw URLError(.badServerResponse)
-        }
+        let requestModel = APIRequest<EmptyResponse>(method: .delete, path: "products/\(id)")
+        let _ = try await execute(requestModel)
     }
     
     func createProduct(_ payload: CreateProductRequest) async throws -> Product {
-        var request = URLRequest(url: baseURL)
-        request.httpMethod = "POST"
-        
-        let body = try JSONEncoder().encode(payload)
-        request.httpBody = body
-        
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let (data, response) = try await URLSession.shared.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw URLError(.badServerResponse)
-        }
-        
-        guard (200..<300).contains(httpResponse.statusCode) else {
-            let bodyString = String(data: data, encoding: .utf8) ?? "<non-UTF8 body>"
-            print("Create failed: \(httpResponse.statusCode) – \(bodyString)")
-            throw URLError(.badServerResponse)
-        }
-        
-        return try JSONDecoder().decode(Product.self, from: data)
+        let requestModel = try APIRequest<Product>(method: .post, path: "products", body: payload)
+        return try await execute(requestModel)
     }
     
     func fetchProducts() async throws -> [Product] {
-        let (data, response) = try await URLSession.shared.data(from: baseURL)
+        let requestModel = APIRequest<[Product]>(method: .get, path: "products")
+        return try await execute(requestModel)
+    }
+    
+    private func execute<Response>(_ requestModel: APIRequest<Response>) async throws -> Response {
+        let request = try requestModel.makeURLRequest(baseURL: baseURL)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse else {
             throw URLError(.badServerResponse)
@@ -96,7 +49,7 @@ struct ProductService: ProductServiceProtocol {
             throw URLError(.badServerResponse)
         }
         
-        return try JSONDecoder().decode([Product].self, from: data)
+        return try JSONDecoder().decode(Response.self, from: data)
     }
 }
 
