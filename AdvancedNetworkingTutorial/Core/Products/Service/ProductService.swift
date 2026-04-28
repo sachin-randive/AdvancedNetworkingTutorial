@@ -17,22 +17,22 @@ struct ProductService: ProductServiceProtocol {
     private let baseURL: URL = URL(string: "https://api.escuelajs.co/api/v1/")!
     
     func updateProduct(_ id: Int, with payload: UpdateProductRequest) async throws -> Product {
-        let requestModel = try APIRequest<Product>(method: .put, path: "products/\(id)", body: payload)
+        let requestModel = try APIRequest<Product>(method: .put, path: .products(.byId(id)), body: payload)
         return try await execute(requestModel)
     }
     
     func deleteProduct(_ id: Int) async throws {
-        let requestModel = APIRequest<EmptyResponse>(method: .delete, path: "products/\(id)")
+        let requestModel = APIRequest<EmptyResponse>(method: .delete, path: .products(.byId(id)))
         let _ = try await execute(requestModel)
     }
     
     func createProduct(_ payload: CreateProductRequest) async throws -> Product {
-        let requestModel = try APIRequest<Product>(method: .post, path: "products", body: payload)
+        let requestModel = try APIRequest<Product>(method: .post, path: .products(.list), body: payload)
         return try await execute(requestModel)
     }
     
     func fetchProducts() async throws -> [Product] {
-        let requestModel = APIRequest<[Product]>(method: .get, path: "products")
+        let requestModel = APIRequest<[Product]>(method: .get, path: .products(.list),)
         return try await execute(requestModel)
     }
     

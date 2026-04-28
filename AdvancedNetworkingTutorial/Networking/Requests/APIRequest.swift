@@ -18,14 +18,14 @@ struct EmptyResponse: Decodable { }
 
 struct APIRequest<Response: Decodable> {
     let method: HTTPMethod
-    let path: String
+    let path: APIRoute
     var queryItems: [URLQueryItem]
     var headers: [String: String]
     var body: Data?
     
     init(
         method: HTTPMethod,
-        path: String,
+        path: APIRoute,
         queryItems: [URLQueryItem] = [],
         headers: [String : String] = [:],
         body: Data? = nil
@@ -39,7 +39,7 @@ struct APIRequest<Response: Decodable> {
     
     init<Body: Encodable>(
         method: HTTPMethod,
-        path: String,
+        path: APIRoute,
         queryItems: [URLQueryItem] = [],
         headers: [String : String] = [:],
         encoder: JSONEncoder = JSONEncoder(),
@@ -57,7 +57,7 @@ struct APIRequest<Response: Decodable> {
     }
     
     func makeURLRequest(baseURL: URL, defaultHeaders: [String: String] = [:]) throws -> URLRequest {
-        guard var components = URLComponents(url: baseURL.appendingPathComponent(path), resolvingAgainstBaseURL: true) else {
+        guard var components = URLComponents(url: baseURL.appendingPathComponent(path.path), resolvingAgainstBaseURL: true) else {
             throw URLError(.badURL)
         }
         
