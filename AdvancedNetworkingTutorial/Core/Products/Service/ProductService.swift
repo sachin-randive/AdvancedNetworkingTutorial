@@ -44,7 +44,7 @@ struct ProductService: ProductServiceProtocol {
     func deleteProduct(_ id: Int) async throws {
         let baseURL: URL = URL(string: "https://api.escuelajs.co/api/v1/products/\(id)")!
         var request = URLRequest(url: baseURL)
-        request.httpMethod = "DELET"
+        request.httpMethod = "DELETE"
         
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
