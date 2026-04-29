@@ -9,7 +9,15 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        ProductsView()
+        TabView {
+            Tab("Products", systemImage: "cart") {
+                ProductsView()
+            }
+            
+            Tab("Users", systemImage: "person") {
+               UserListView()
+            }
+        }
     }
 }
 
