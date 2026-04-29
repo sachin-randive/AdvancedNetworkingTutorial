@@ -7,6 +7,10 @@
 
 import Foundation
 
+struct URLConstants {
+    static let fakeStoreURL: URL = URL(string: "https://api.escuelajs.co/api/v1/")!
+
+}
 enum APIRoute {
     case products(ProductEndpointPath)
     
