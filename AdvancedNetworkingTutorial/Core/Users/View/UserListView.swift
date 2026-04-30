@@ -6,10 +6,47 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct UserListView: View {
+    @State private var viewModel = UserListViewModel(service: UserService())
+    @State private var hasLoaded = false
+    @State private var formIntent: UserFormIntent?
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationStack {
+            List(viewModel.users) { user in
+                UserRowView(user: user)
+                    .padding(.vertical, 6)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button("Edit") {
+                            formIntent = .update(user)
+                        }
+                        .tint(.blue)
+                    }
+            }
+            .listStyle(.plain)
+            .navigationTitle("Users")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        formIntent = .create
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+        }
+        
+        .refreshable { await viewModel.loadUsers() }
+        .sheet(item: $formIntent) { intent in
+            UserFormView(intent: intent)
+                .environment(viewModel)
+        }
+        .task {
+            await viewModel.loadUsers()
+            hasLoaded = true
+        }
     }
 }
 

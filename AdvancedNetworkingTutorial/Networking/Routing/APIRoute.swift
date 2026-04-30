@@ -13,11 +13,14 @@ struct URLConstants {
 }
 enum APIRoute {
     case products(ProductEndpointPath)
+    case users(UserEndpoint)
     
     var path: String {
         switch self {
         case .products(let productRoute):
             return productRoute.path
+        case .users(let endpoint):
+            return endpoint.path
         }
     }
 }
