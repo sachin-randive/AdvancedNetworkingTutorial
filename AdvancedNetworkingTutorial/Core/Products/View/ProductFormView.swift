@@ -129,6 +129,7 @@ private extension ProductFormView {
             let payload = UpdateProductRequest(title: title, price: parsedPrice)
             await viewModel.updateProduct(product.id, with: payload)
         }
+        dismiss()
     }
     
     private func populateFormIfNeeded() {
