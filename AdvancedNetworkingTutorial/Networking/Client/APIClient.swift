@@ -13,18 +13,23 @@ struct APIClient {
     var decoder: JSONDecoder = JSONDecoder()
     
     func execute<Response>(_ requestModel: APIRequest<Response>) async throws -> Response {
-        let request = try requestModel.makeURLRequest(baseURL: baseURL)
-        
-        let (data, response) = try await sesion.data(for: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw URLError(.badServerResponse)
+        do {
+            let request = try requestModel.makeURLRequest(baseURL: baseURL)
+            
+            let (data, response) = try await sesion.data(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw NetworkError.invalidResponse
+            }
+            
+            guard (200..<300).contains(httpResponse.statusCode) else {
+                throw NetworkError.httpStatus(code: httpResponse.statusCode)
+            }
+            
+            return try decoder.decode(Response.self, from: data)
+        } catch {
+            let mapped = NetworkErrorMapper.map(error)
+            throw mapped
         }
-        
-        guard 200..<300 ~= httpResponse.statusCode else {
-            throw URLError(.badServerResponse)
-        }
-        
-        return try decoder.decode(Response.self, from: data)
     }
 }
