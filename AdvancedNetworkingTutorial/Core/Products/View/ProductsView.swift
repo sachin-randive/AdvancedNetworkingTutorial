@@ -13,16 +13,27 @@ struct ProductsView: View {
     @State private var isShowingCreateSheet = false
     var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 16) {
-                    ForEach(viewModel.products) { product in
-                        NavigationLink(value: product) {
-                            ProductCardView(product: product)
+            Group {
+                switch viewModel.loadingState {
+                case .idle, .loading:
+                    ProgressView()
+                case .empty:
+                    Text("No prodcuts to display")
+                case .error(let errorMessage):
+                    Text(errorMessage)
+                case .loaded(let products):
+                    ScrollView {
+                        LazyVStack(spacing: 16) {
+                            ForEach(products) { product in
+                                NavigationLink(value: product) {
+                                    ProductCardView(product: product)
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
-                        .buttonStyle(.plain)
+                        .padding()
                     }
                 }
-                .padding()
             }
             .navigationTitle(Text("Products"))
             .toolbar {
