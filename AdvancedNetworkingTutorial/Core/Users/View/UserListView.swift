@@ -15,15 +15,26 @@ struct UserListView: View {
     
     var body: some View {
         NavigationStack {
-            List(viewModel.users) { user in
-                UserRowView(user: user)
-                    .padding(.vertical, 6)
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button("Edit") {
-                            formIntent = .update(user)
-                        }
-                        .tint(.blue)
+            Group {
+                switch viewModel.loadingState {
+                case .idle, .loading:
+                    ProgressView()
+                case .empty:
+                    Text("No Users to display")
+                case .error(let errorMessage):
+                    Text(errorMessage)
+                case .loaded(let users):
+                    List(users) { user in
+                        UserRowView(user: user)
+                            .padding(.vertical, 6)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button("Edit") {
+                                    formIntent = .update(user)
+                                }
+                                .tint(.blue)
+                            }
                     }
+                }
             }
             .listStyle(.plain)
             .navigationTitle("Users")

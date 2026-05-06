@@ -9,7 +9,6 @@ import Foundation
 
 @Observable @MainActor
 final class ProductsViewModel {
-    // var products: [Product] = []
     var loadingState: LoadingState<[Product]> = .idle
     
     private let service: ProductServiceProtocol
@@ -54,6 +53,7 @@ final class ProductsViewModel {
             print("DEBUG: Failed to delet product with error: \(error)")
         }
     }
+    
     private func insertorstartProducts(with product: Product) {
         switch loadingState {
         case .loaded(var  products):
@@ -70,6 +70,7 @@ final class ProductsViewModel {
         products[index] = product
         loadingState = .loaded(products)
     }
+    
     private func replaceProductIfLoaded(id: Int) {
         guard case .loaded(var products) = loadingState else { return }
         guard let index = products.firstIndex(where: { $0.id == id }) else { return }
