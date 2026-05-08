@@ -13,7 +13,7 @@ protocol ListMutating: AnyObject {
 }
 
 extension ListMutating {
-    func insertorstart(with item: Item) {
+    func insertOrStart(with item: Item) {
         switch loadingState {
         case .loaded(var  items):
             items.insert(item, at: 0)
@@ -23,7 +23,7 @@ extension ListMutating {
         }
     }
     
-    func replaceProductIfLoaded(with item: Item) {
+    func replaceItemIfLoaded(with item: Item) {
         guard case .loaded(var items) = loadingState else { return }
         guard let index = items.firstIndex(where: { $0.id == item.id }) else { return }
         items[index] = item
