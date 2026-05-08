@@ -8,9 +8,9 @@
 import Foundation
 import Observation
 
-@MainActor
+
 @Observable
-final class UserListViewModel {
+final class UserListViewModel: @MainActor ListMutating {
     var loadingState: LoadingState<[User]> = .idle
 
     private let service: UserServiceProtocol
@@ -33,7 +33,7 @@ final class UserListViewModel {
     func createUser(_ payload: CreateUserRequest) async {
         do {
             let newUser = try await service.create(payload)
-            insertorstartUsers(with: newUser)
+            insertOrStart(with: newUser)
         } catch {
             print("DEBUG: Failed to fetch users with error: \(error)")
         }
@@ -42,26 +42,9 @@ final class UserListViewModel {
     func updateUser(id: Int, payload: UpdateUserRequest) async {
         do {
             let newUser = try await service.update(id: id, with: payload)
-            replaceUserIfLoaded(with: newUser)
+            replaceItemIfLoaded(with: newUser)
         } catch {
             print("DEBUG: Failed to fetch users with error: \(error)")
         }
-    }
-    
-    private func insertorstartUsers(with user: User) {
-        switch loadingState {
-        case .loaded(var  users):
-            users.insert(user, at: 0)
-            loadingState = .loaded(users)
-        default:
-            loadingState = .loaded([user])
-        }
-    }
-    
-    private func replaceUserIfLoaded(with user: User) {
-        guard case .loaded(var users) = loadingState else { return }
-        guard let index = users.firstIndex(where: { $0.id == user.id }) else { return }
-        users[index] = user
-        loadingState = .loaded(users)
     }
 }
