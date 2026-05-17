@@ -22,6 +22,9 @@ struct ProductFormView: View {
     @State private var validationMessage: String?
     @State private var hasPopulatedFromIntent = false
     
+    @State private var isShowingMutationErrorAlert = false
+    @State private var mutationErrorMessage = ""
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -121,15 +124,38 @@ private extension ProductFormView {
             )
             
             await viewModel.createProduct(payload)
-            dismiss()
+            switch viewModel.mutationState {
+            case .succeeded(let operation):
+                guard operation == .create else { return }
+                dismiss()
+                
+            case .failed(let operation, let errorMessage):
+                mutationErrorMessage = errorMessage
+                isShowingMutationErrorAlert = true
+                
+            default:
+                break
+            }
+            viewModel.resetMutationState()
             
         case .update(let product):
-            print("Update product \(product.id)")
-            
             let payload = UpdateProductRequest(title: title, price: parsedPrice)
             await viewModel.updateProduct(product.id, with: payload)
+            
+            switch viewModel.mutationState {
+            case .succeeded(let operation):
+                guard operation == .update else { return }
+                dismiss()
+                
+            case .failed(let operation, let errorMessage):
+                mutationErrorMessage = errorMessage
+                isShowingMutationErrorAlert = true
+                
+            default:
+                break
+            }
+            viewModel.resetMutationState()
         }
-        dismiss()
     }
     
     private func populateFormIfNeeded() {

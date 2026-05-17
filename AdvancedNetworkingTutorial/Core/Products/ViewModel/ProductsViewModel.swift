@@ -10,6 +10,7 @@ import Foundation
 @Observable
 final class ProductsViewModel: @MainActor ListMutating {
     var loadingState: LoadingState<[Product]> = .idle
+    var mutationState: MutationState = .idle
     
     private let service: ProductServiceProtocol
     init(service: ProductServiceProtocol) {
@@ -28,29 +29,39 @@ final class ProductsViewModel: @MainActor ListMutating {
     }
     
     func createProduct(_ payload: CreateProductRequest) async {
+        mutationState = .inProgress(.create)
         do {
             let newProduct = try await service.createProduct(payload)
             insertOrStart(with: newProduct)
+            mutationState = .succeeded(.create)
         } catch {
-            print("DEBUG: Failed to create product with error: \(error)")
+            mutationState = .failed(.create, error.localizedDescription)
         }
     }
     
     func updateProduct(_ id: Int, with payload: UpdateProductRequest) async {
+        mutationState = .inProgress(.update)
         do {
             let updatedProduct = try await service.updateProduct(id, with: payload)
             replaceItemIfLoaded(with: updatedProduct)
+            mutationState = .succeeded(.update)
         } catch {
-            print("DEBUG: Failed to update product with error: \(error)")
+            mutationState = .failed(.update, error.localizedDescription)
         }
     }
     
     func deletProduct(_ id: Int) async {
+        mutationState = .inProgress(.delete)
         do {
             try await service.deleteProduct(id)
             removeItemIfLoaded(id: id)
+            mutationState = .succeeded(.delete)
         } catch {
-            print("DEBUG: Failed to delet product with error: \(error)")
+            mutationState = .failed(.delete, error.localizedDescription)
         }
+    }
+    
+    func resetMutationState() {
+        mutationState = .idle
     }
 }
