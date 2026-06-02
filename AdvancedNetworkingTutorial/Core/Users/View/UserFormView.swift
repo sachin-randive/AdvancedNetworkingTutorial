@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct UserFormView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(UserListViewModel.self) private var viewModel
@@ -19,7 +17,6 @@ struct UserFormView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var avatarURL = "https://picsum.photos/200/200"
-    @State private var isSubmitting = false
     @State private var validationMessage: String?
     @State private var hasPopulatedFromIntent = false
     @State private var isShowingMutationErrorAlert = false
@@ -55,7 +52,14 @@ struct UserFormView: View {
                     }
                 }
             }
-            .interactiveDismissDisabled(isSubmitting)
+            .alert("Couldn’t Save Product", isPresented: $isShowingMutationErrorAlert) {
+                Button("OK") {
+                    viewModel.resetMutationState()
+                }
+            } message: {
+                Text(mutationErrorMessage)
+            }
+            .interactiveDismissDisabled(isSavingCurrentIntent)
             .onAppear {
                 populateFormIfNeeded()
             }
@@ -64,14 +68,20 @@ struct UserFormView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") { dismiss() }
-                        .disabled(isSubmitting)
+                        .disabled(isSavingCurrentIntent)
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { Task { await submit() } } label: {
-                        Text(intent.submitTitle)
+                        ZStack {
+                            if isSavingCurrentIntent {
+                                ProgressView()
+                            } else {
+                                Text(intent.submitTitle)
+                            }
+                        }
                     }
-                    .disabled(isSubmitting)
+                    .disabled(isSavingCurrentIntent)
                 }
             }
         }
@@ -112,9 +122,6 @@ struct UserFormView: View {
             return
         }
 
-        isSubmitting = true
-        defer { isSubmitting = false }
-
         switch intent {
         case .create:
             let payload = CreateUserRequest(
@@ -134,7 +141,16 @@ struct UserFormView: View {
             await viewModel.updateUser(id: user.id, payload: payload)
         }
         
-        dismiss()
+        switch viewModel.mutationState {
+        case .succeeded(let operation) where operation == expectedMutationOperation:
+            viewModel.resetMutationState()
+            dismiss()
+        case .failed(_, let errorMessage):
+            mutationErrorMessage = errorMessage
+            isShowingMutationErrorAlert = true
+        default:
+            break
+        }
     }
 
     private func populateFormIfNeeded() {
@@ -146,5 +162,19 @@ struct UserFormView: View {
         name = user.name
         email = user.email
         avatarURL = user.avatar ?? "https://picsum.photos/200/200"
+    }
+    
+    var expectedMutationOperation: MutationOperation {
+        switch intent {
+        case .create:
+            return .create
+        case .update:
+            return .update
+        }
+    }
+    
+    var isSavingCurrentIntent: Bool {
+        guard case .inProgress(let operation) = viewModel.mutationState else { return false }
+        return operation == expectedMutationOperation
     }
 }

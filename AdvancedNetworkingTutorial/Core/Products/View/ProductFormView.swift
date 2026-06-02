@@ -144,7 +144,7 @@ private extension ProductFormView {
             viewModel.resetMutationState()
             dismiss()
             
-        case .failed(let operation, let errorMessage):
+        case .failed(_, let errorMessage):
             mutationErrorMessage = errorMessage
             isShowingMutationErrorAlert = true
             
@@ -169,7 +169,7 @@ private extension ProductFormView {
     var expectedMutationOperation: MutationOperation {
         switch intent {
         case .create: return .create
-        case .update(let product): return .update
+        case .update: return .update
         }
     }
     
