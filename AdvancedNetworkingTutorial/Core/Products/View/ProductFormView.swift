@@ -56,6 +56,11 @@ struct ProductFormView: View {
                     }
                 }
             }
+            .alert("Couldn't Save Product", isPresented: $isShowingMutationErrorAlert) {
+                Button("OK") { viewModel.resetMutationState() }
+            } message: {
+                Text(mutationErrorMessage)
+            }
             .interactiveDismissDisabled(isSubmitting)
             .onAppear {
                 populateFormIfNeeded()
@@ -70,8 +75,12 @@ struct ProductFormView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { Task { await submit() } } label: {
-                        HStack(spacing: 8) {
-                            Text(intent.submitTitle)
+                        ZStack {
+                            if isSavingCurrentIntent {
+                                ProgressView()
+                            } else {
+                                Text(intent.submitTitle)
+                            }
                         }
                     }
                     .disabled(isSubmitting)
@@ -82,7 +91,7 @@ struct ProductFormView: View {
 }
 
 private extension ProductFormView {
-    private func submit() async {
+     func submit() async {
         validationMessage = nil
         
         guard !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -124,41 +133,27 @@ private extension ProductFormView {
             )
             
             await viewModel.createProduct(payload)
-            switch viewModel.mutationState {
-            case .succeeded(let operation):
-                guard operation == .create else { return }
-                dismiss()
-                
-            case .failed(let operation, let errorMessage):
-                mutationErrorMessage = errorMessage
-                isShowingMutationErrorAlert = true
-                
-            default:
-                break
-            }
-            viewModel.resetMutationState()
             
         case .update(let product):
             let payload = UpdateProductRequest(title: title, price: parsedPrice)
             await viewModel.updateProduct(product.id, with: payload)
-            
-            switch viewModel.mutationState {
-            case .succeeded(let operation):
-                guard operation == .update else { return }
-                dismiss()
-                
-            case .failed(let operation, let errorMessage):
-                mutationErrorMessage = errorMessage
-                isShowingMutationErrorAlert = true
-                
-            default:
-                break
-            }
+        }
+        
+        switch viewModel.mutationState {
+        case .succeeded(let operation) where operation == expectedMutationOperation:
             viewModel.resetMutationState()
+            dismiss()
+            
+        case .failed(let operation, let errorMessage):
+            mutationErrorMessage = errorMessage
+            isShowingMutationErrorAlert = true
+            
+        default:
+            break
         }
     }
     
-    private func populateFormIfNeeded() {
+     func populateFormIfNeeded() {
         guard !hasPopulatedFromIntent else { return }
         hasPopulatedFromIntent = true
         
@@ -169,5 +164,17 @@ private extension ProductFormView {
         productDescription = product.description
         categoryId = String(product.category?.id ?? 1)
         imageURL = product.images.first ?? "https://placehold.co/600x400"
+    }
+    
+    var expectedMutationOperation: MutationOperation {
+        switch intent {
+        case .create: return .create
+        case .update(let product): return .update
+        }
+    }
+    
+    var isSavingCurrentIntent: Bool {
+        guard case .inProgress(let operation) = viewModel.mutationState else { return false }
+        return operation == expectedMutationOperation
     }
 }
