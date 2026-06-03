@@ -11,6 +11,8 @@ import SwiftUI
 struct ProductsView: View {
     @State private var viewModel = ProductsViewModel(service: ProductService())
     @State private var isShowingCreateSheet = false
+    @State private var showNetworkLogger = false
+    
     var body: some View {
         NavigationStack {
             Group {
@@ -44,10 +46,19 @@ struct ProductsView: View {
                         Image(systemName: "plus")
                     }
                 }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showNetworkLogger.toggle() } label: {
+                        Image(systemName: "bolt.horizontal.circle")
+                    }
+                }
             }
             .navigationDestination(for: Product.self) { product in
                 ProductDetailView(product: product)
                     .environment(viewModel)
+            }
+            .sheet(isPresented: $showNetworkLogger) {
+                NetworkLogsView(logStore: NetworkLogStore.shared)
             }
             .sheet(isPresented: $isShowingCreateSheet) {
                 ProductFormView(intent: .create)
