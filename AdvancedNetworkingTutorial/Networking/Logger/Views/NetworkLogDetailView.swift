@@ -21,8 +21,10 @@ struct NetworkLogDetailView: View {
                 if let url = entry.url {
                     labeledSection("URL", value: url)
                 }
-
-                labeledSection("Method", value: entry.method.rawValue)
+                
+                if let method = entry.method {
+                    labeledSection("Method", value: method.rawValue)
+                }
 
                 if let statusCode = entry.statusCode {
                     labeledSection("Status", value: String(statusCode))

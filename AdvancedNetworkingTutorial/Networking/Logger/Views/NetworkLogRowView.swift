@@ -21,9 +21,11 @@ struct NetworkLogRowView: View {
                     .foregroundStyle(kindColor)
                     .clipShape(Capsule())
 
-                Text(entry.method.rawValue)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                if let method = entry.method {
+                    Text(method.rawValue)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
 
                 Spacer()
 

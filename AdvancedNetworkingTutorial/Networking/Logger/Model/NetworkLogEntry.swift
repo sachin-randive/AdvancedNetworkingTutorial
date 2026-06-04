@@ -11,7 +11,7 @@ struct NetworkLogEntry: Identifiable, Hashable {
     let id: UUID
     let kind: Kind
     let timestamp: Date
-    let method: HTTPMethod
+    let method: HTTPMethod?
     let url: String?
     let statusCode: Int?
     let durationMs: Int?
@@ -36,7 +36,7 @@ struct NetworkLogEntry: Identifiable, Hashable {
         id: UUID = UUID(),
         kind: Kind,
         timestamp: Date = Date(),
-        method: HTTPMethod,
+        method: HTTPMethod? = nil,
         url: String? = nil,
         statusCode: Int? = nil,
         durationMs: Int? = nil,
