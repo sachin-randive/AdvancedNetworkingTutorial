@@ -17,8 +17,6 @@ final class NetworkLogStore {
     
     init (maxEntries: Int = 300) {
         self.maxEntries = maxEntries
-        
-        self.entries = NetworkLogEntry.mocks
     }
     
     func log(_ entry: NetworkLogEntry) {
