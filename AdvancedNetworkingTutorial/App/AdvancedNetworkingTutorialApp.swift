@@ -12,6 +12,7 @@ struct AdvancedNetworkingTutorialApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(\.networkLogPresenter, NetworkLogPresenter())
         }
     }
 }

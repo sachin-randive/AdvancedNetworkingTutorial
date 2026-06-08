@@ -38,6 +38,7 @@ struct UserListView: View {
             }
             .listStyle(.plain)
             .navigationTitle("Users")
+            .networkLogsSheet()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
