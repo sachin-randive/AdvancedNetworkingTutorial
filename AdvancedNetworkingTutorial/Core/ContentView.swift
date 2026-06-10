@@ -17,6 +17,10 @@ struct ContentView: View {
             Tab("Users", systemImage: "person") {
                UserListView()
             }
+            
+            Tab("Auth", systemImage: "person") {
+                LoginView()
+            }
         }
     }
 }
