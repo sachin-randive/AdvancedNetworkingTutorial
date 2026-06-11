@@ -9,17 +9,27 @@ import Foundation
 
 @Observable @MainActor
 final class AuthenticationManager {
+    var authState: AuthState = .unknown
     private let service: AuthenticationServiceProtocol
     
     init(service: AuthenticationServiceProtocol) {
         self.service = service
+        
+        if service.currentAccessToken() != nil {
+            authState = .signedIn
+        } else {
+            authState = .signOut
+        }
     }
     
     func login(payload: LoginRequest) async {
+        authState = .signingIn
         do {
             try await service.login(payload: payload)
+            authState = .signedIn
         } catch {
             print("DEBUG: Login failed with error: \(error)")
+            authState = .error(error.localizedDescription)
         }
     }
 }

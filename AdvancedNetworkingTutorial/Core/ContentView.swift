@@ -8,18 +8,24 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(AuthenticationManager.self) private var authManager
     var body: some View {
-        TabView {
-            Tab("Products", systemImage: "cart") {
-                ProductsView()
-            }
-            
-            Tab("Users", systemImage: "person") {
-               UserListView()
-            }
-            
-            Tab("Auth", systemImage: "person") {
+        Group {
+            switch authManager.authState {
+            case .signOut, .error:
                 LoginView()
+            case .signingIn, .unknown:
+                ProgressView()
+            case .signedIn:
+                TabView {
+                    Tab("Products", systemImage: "cart") {
+                        ProductsView()
+                    }
+                    
+                    Tab("Users", systemImage: "person") {
+                       UserListView()
+                    }
+                }
             }
         }
     }
