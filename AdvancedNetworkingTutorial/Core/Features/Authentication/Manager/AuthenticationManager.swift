@@ -32,4 +32,8 @@ final class AuthenticationManager {
             authState = .error(error.localizedDescription)
         }
     }
+    func logout() {
+        service.logout()
+        authState = .signOut
+    }
 }

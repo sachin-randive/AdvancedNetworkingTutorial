@@ -16,13 +16,15 @@ protocol AuthenticationServiceProtocol {
 
 struct AuthenticationService: AuthenticationServiceProtocol {
     private let client: APIClient
+    private let tokenStore: TokenStore
     
-    init(session: URLSession = URLSession.shared) {
+    init(session: URLSession = URLSession.shared, tokenStore: TokenStore = InMemoryTokenStore()) {
         self.client = APIClient(
             baseURL: URLConstants.fakeStoreURL,
             session: session,
             decoder: JSONDecoder()
         )
+        self.tokenStore = tokenStore
     }
     
     func login(payload: LoginRequest) async throws {
@@ -34,15 +36,15 @@ struct AuthenticationService: AuthenticationServiceProtocol {
         
         let tokens = try await client.execute(request)
         
-        print("DEBUG: Tokens \(tokens)")
+        tokenStore.save(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
     }
     
     func logout() {
-        
+        tokenStore.clear()
     }
     
     func currentAccessToken() -> String? {
-        return nil
+        tokenStore.loadAccessToken()
     }
     
     func fetchProfile() async throws -> AuthProfile {
