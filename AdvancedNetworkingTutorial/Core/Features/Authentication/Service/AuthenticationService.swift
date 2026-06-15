@@ -48,6 +48,17 @@ struct AuthenticationService: AuthenticationServiceProtocol {
     }
     
     func fetchProfile() async throws -> AuthProfile {
-        return AuthProfile(id: 1, email: "test@gmail.com", name: "Test", role: "test", avatar: "")
+        guard let accessToken = tokenStore.loadAccessToken() else {
+            throw URLError(.badURL)
+        }
+        
+        let request = APIRequest<AuthProfile>(
+            method: .get,
+            path: .auth(.profile),
+            headers: ["Authorization": "Bearer \(accessToken)"]
+        )
+        
+        let profile = try await client.execute(request)
+        return profile
     }
 }

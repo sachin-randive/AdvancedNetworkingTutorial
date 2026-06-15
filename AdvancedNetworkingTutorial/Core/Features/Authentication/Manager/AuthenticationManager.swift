@@ -10,6 +10,7 @@ import Foundation
 @Observable @MainActor
 final class AuthenticationManager {
     var authState: AuthState = .unknown
+    var authProfile: AuthProfile?
     private let service: AuthenticationServiceProtocol
     
     init(service: AuthenticationServiceProtocol) {
@@ -32,6 +33,15 @@ final class AuthenticationManager {
             authState = .error(error.localizedDescription)
         }
     }
+    
+    func fertchProfile() async {
+        do {
+            self.authProfile = try await service.fetchProfile()
+        } catch {
+            print("DEBUG: Profile fetch failed with error: \(error)")
+        }
+    }
+    
     func logout() {
         service.logout()
         authState = .signOut

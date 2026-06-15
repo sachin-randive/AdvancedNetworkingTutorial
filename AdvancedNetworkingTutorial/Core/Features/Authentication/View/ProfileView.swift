@@ -10,14 +10,14 @@ import SwiftUI
 import Kingfisher
 
 struct ProfileView: View {
-    let user: User
+    @Environment(AuthenticationManager.self) private var authManager
     
     var body: some View {
         NavigationStack {
             List {
                 Section {
                     HStack(alignment: .center, spacing: 16) {
-                        if let avatar = user.avatar, let url = URL(string: avatar) {
+                        if let avatar = authManager.authProfile?.avatar, let url = URL(string: avatar) {
                             KFImage(url)
                                 .placeholder {
                                     ProgressView()
@@ -35,10 +35,10 @@ struct ProfileView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(user.name)
+                            Text(authManager.authProfile?.name ?? "N/A")
                                 .font(.headline)
                             
-                            Text(user.email)
+                            Text(authManager.authProfile?.email ?? "N/A")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)
@@ -48,17 +48,20 @@ struct ProfileView: View {
                     }
                     .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
                 }
-
-                Section("Account") {
-                    LabeledContent("Name", value: user.name)
-                    LabeledContent("Email", value: user.email)
-                    LabeledContent("Role", value: user.role?.capitalized ?? "Unknown")
-                    LabeledContent("User ID", value: String(user.id))
+                
+                if let profile = authManager.authProfile {
+                    Section("Account") {
+                        LabeledContent("Name", value: profile.name)
+                        LabeledContent("Email", value: profile.email)
+                        LabeledContent("Role", value: profile.role.capitalized)
+                        LabeledContent("User ID", value: String(profile.id))
+                    }
                 }
-
+                
+                
                 Section("Actions") {
                     Button(role: .destructive) {
-                        print("Logout here..")
+                        authManager.logout()
                     } label: {
                         Text("Sign Out")
                     }
@@ -66,9 +69,7 @@ struct ProfileView: View {
             }
             .navigationTitle("Profile")
             .listStyle(.insetGrouped)
-            .task {
-               print("Load user profile here..")
-            }
+            .task { await authManager.fertchProfile() }
         }
     }
 }

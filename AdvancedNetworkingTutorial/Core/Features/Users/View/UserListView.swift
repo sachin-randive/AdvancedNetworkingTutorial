@@ -9,9 +9,12 @@ import SwiftUI
 import Kingfisher
 
 struct UserListView: View {
+    @Environment(AuthenticationManager.self) private var authManager
+    
     @State private var viewModel = UserListViewModel(service: UserService())
     @State private var hasLoaded = false
     @State private var formIntent: UserFormIntent?
+    @State private var isShowingProfile = false
     
     var body: some View {
         NavigationStack {
@@ -36,10 +39,22 @@ struct UserListView: View {
                     }
                 }
             }
+            .sheet(isPresented: $isShowingProfile) {
+                ProfileView()
+                    .environment(authManager)
+            }
             .listStyle(.plain)
             .navigationTitle("Users")
             .networkLogsSheet()
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        isShowingProfile = true
+                    } label: {
+                        Image(systemName: "person")
+                    }
+                }
+                
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         formIntent = .create
