@@ -18,7 +18,7 @@ struct AuthenticationService: AuthenticationServiceProtocol {
     private let client: APIClient
     private let tokenStore: TokenStore
     
-    init(session: URLSession = URLSession.shared, tokenStore: TokenStore = InMemoryTokenStore()) {
+    init(session: URLSession = URLSession.shared, tokenStore: TokenStore = KeyChainTokenStore()) {
         self.client = APIClient(
             baseURL: URLConstants.fakeStoreURL,
             session: session,
