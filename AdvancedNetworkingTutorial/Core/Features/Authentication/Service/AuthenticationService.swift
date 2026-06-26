@@ -19,10 +19,13 @@ struct AuthenticationService: AuthenticationServiceProtocol {
     private let tokenStore: TokenStore
     
     init(session: URLSession = URLSession.shared, tokenStore: TokenStore = KeyChainTokenStore()) {
+        let allowedHosts = Set([URLConstants.fakeStoreURL.host].compactMap { $0 })
+
         self.client = APIClient(
             baseURL: URLConstants.fakeStoreURL,
             session: session,
-            decoder: JSONDecoder()
+            decoder: JSONDecoder(),
+            adapter: BearerTokenAdapter(tokenStore: tokenStore, allowedHosts: allowedHosts)
         )
         self.tokenStore = tokenStore
     }
@@ -54,8 +57,7 @@ struct AuthenticationService: AuthenticationServiceProtocol {
         
         let request = APIRequest<AuthProfile>(
             method: .get,
-            path: .auth(.profile),
-            headers: ["Authorization": "Bearer \(accessToken)"]
+            path: .auth(.profile)
         )
         
         let profile = try await client.execute(request)

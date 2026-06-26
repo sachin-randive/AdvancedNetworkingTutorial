@@ -11,6 +11,7 @@ struct APIClient {
     let baseURL: URL
     var session: URLSession = .shared
     var decoder: JSONDecoder = JSONDecoder()
+    var adapter: RequestAdapter?
     
     let logger = NetworkLogStore.shared
     
@@ -18,7 +19,7 @@ struct APIClient {
         let start = Date()
         
         do {
-            let request = try requestModel.makeURLRequest(baseURL: baseURL)
+            let request = try makeAdaptedRequest(for: requestModel)
             logRequest(request)
             
             let (data, response) = try await session.data(for: request)
@@ -45,6 +46,16 @@ struct APIClient {
             logError(mapped, duration: Date().timeIntervalSince(start))
             throw mapped
         }
+    }
+}
+
+// Adaptation
+private extension APIClient {
+    func makeAdaptedRequest<Response>(for request: APIRequest<Response>) throws -> URLRequest {
+        let rawRequest = try request.makeURLRequest(baseURL: baseURL)
+        
+        guard let adapter else { return rawRequest }
+        return adapter.adapt(rawRequest)
     }
 }
 
