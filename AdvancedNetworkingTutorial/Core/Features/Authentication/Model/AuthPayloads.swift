@@ -12,7 +12,7 @@ struct LoginRequest: Encodable {
     let password: String
 }
 
-struct AuthTokenResponse: Decodable {
+nonisolated struct AuthTokenResponse: Decodable {
     let accessToken: String
     let refreshToken: String
     
@@ -22,6 +22,6 @@ struct AuthTokenResponse: Decodable {
     }
 }
 
-struct RefreshTokenRequest: Encodable {
+nonisolated struct RefreshTokenRequest: Encodable {
     let refreshToken: String
 }

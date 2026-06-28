@@ -28,7 +28,7 @@ final class KeyChainTokenStore: TokenStore {
     
     func clear() {
         delete(account: accessTokenAccountKey)
-        delete(account: refreshTokenAccountKey)
+       // delete(account: refreshTokenAccountKey)
     }
 }
 

@@ -17,6 +17,7 @@ protocol AuthenticationServiceProtocol {
 struct AuthenticationService: AuthenticationServiceProtocol {
     private let client: APIClient
     private let tokenStore: TokenStore
+    private let refreshCoordinator: TokenRefreshCoordinator
     
     init(session: URLSession = URLSession.shared, tokenStore: TokenStore = KeyChainTokenStore()) {
         let allowedHosts = Set([URLConstants.fakeStoreURL.host].compactMap { $0 })
@@ -27,7 +28,9 @@ struct AuthenticationService: AuthenticationServiceProtocol {
             decoder: JSONDecoder(),
             adapter: BearerTokenAdapter(tokenStore: tokenStore, allowedHosts: allowedHosts)
         )
+        
         self.tokenStore = tokenStore
+        self.refreshCoordinator = TokenRefreshCoordinator(client: client, tokenStore: tokenStore)
     }
     
     func login(payload: LoginRequest) async throws {
@@ -51,16 +54,30 @@ struct AuthenticationService: AuthenticationServiceProtocol {
     }
     
     func fetchProfile() async throws -> AuthProfile {
-        guard let accessToken = tokenStore.loadAccessToken() else {
-            throw URLError(.badURL)
-        }
+        tokenStore.clear()
         
         let request = APIRequest<AuthProfile>(
             method: .get,
             path: .auth(.profile)
         )
         
-        let profile = try await client.execute(request)
-        return profile
+        do {
+            let profile = try await client.execute(request)
+            return profile
+        } catch {
+            print("DEBUG: Failed profile fetch with error:\(error.localizedDescription)")
+            guard NetworkErrorMapper.map(error).statusCode == 401 else { throw error }
+            
+            do {
+                try await refreshCoordinator.refreshIfNeeded()
+                print("DEBUG: Refresh succeeded. Retrying request...")
+            } catch {
+                print("DEBUG: Refresh token failed. Logging user out.")
+                logout()
+                throw AuthError.sessionExpired
+            }
+            
+            return try await client.execute(request)
+        }
     }
 }
