@@ -37,8 +37,11 @@ final class AuthenticationManager {
     func fertchProfile() async {
         do {
             self.authProfile = try await service.fetchProfile()
+        } catch let error as AuthError {
+           logout()
+           authState = .error(error.localizedDescription)
         } catch {
-            print("DEBUG: Profile fetch failed with error: \(error)")
+           authState = .error(error.localizedDescription)
         }
     }
     

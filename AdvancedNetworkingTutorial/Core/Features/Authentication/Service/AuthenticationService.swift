@@ -73,7 +73,6 @@ struct AuthenticationService: AuthenticationServiceProtocol {
                 print("DEBUG: Refresh succeeded. Retrying request...")
             } catch {
                 print("DEBUG: Refresh token failed. Logging user out.")
-                logout()
                 throw AuthError.sessionExpired
             }
             
