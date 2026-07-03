@@ -18,6 +18,10 @@ struct ContentView: View {
                 ProgressView()
             case .signedIn:
                 TabView {
+                    Tab("Crypto", systemImage: "bitcoinsign.circle") {
+                        CryptoPricesView()
+                    }
+                    
                     Tab("Products", systemImage: "cart") {
                         ProductsView()
                     }
